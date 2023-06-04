@@ -1,0 +1,74 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.1 Binary Template
+//
+//      File: TOTK RESTBL
+//   Authors: NSA Cloud
+//   Version: V1
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: *.rsizetable
+//   History: 
+//------------------------------------------------
+//Credit to Arch Leaders for RSTBL library
+LittleEndian();
+#include "TOTK_Hashes.btx"
+
+typedef struct
+{
+    char RESTBL[6];
+    uint version;
+    uint stringBlockSize;
+    uint crcTableNum;
+    uint nameTableNum;
+}RSTBLHeader<bgcolor=0x22AA22>;
+
+typedef struct
+{
+    uint hash;
+    uint fileSize;
+}HashEntry<bgcolor=0x7f21fa,read=ReadHashEntry>;
+
+typedef struct
+{
+    char name[160];
+    uint fileSize;
+}NameEntry<bgcolor=0xEEBBEE,read=ReadNameEntry>;
+typedef struct
+{
+
+    RSTBLHeader header;
+    struct
+    {
+        HashEntry hashEntry[header.crcTableNum];
+    }hashEntries;
+    
+    struct
+    {
+        NameEntry nameEntry[header.nameTableNum];
+    }nameEntries;
+    
+}RSTBL;
+
+//READ FUNCTIONS
+string ReadNameEntry(NameEntry& r) 
+{
+    string s;
+    SPrintf(s, "%s", r.name);
+    return s;
+}
+
+string ReadHashEntry(HashEntry& r) 
+{
+    string hashString = getTOTKHash(r.hash);
+    string extra = "";
+    if (hashString == "Unknown Hash")
+    {
+        SPrintf( extra, " (%i)", r.hash );
+    }    
+    SPrintf(hashString, "%s %s",hashString,extra);
+    return hashString;
+}
+
+RSTBL file;
+
